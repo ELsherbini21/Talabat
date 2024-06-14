@@ -24,9 +24,6 @@ namespace Talabat.Apis.Controllers
             // becasue there is no Navigation Property
             var categories = await _categoryRepo.GetAllAsync();
 
-            if (categories.Count() == 0)
-                return NotFound();
-
             var brands_Dto =
                 _mapper.Map<IReadOnlyList<ProductCategory>, IReadOnlyList<ProductCategoryToReturn_Dto>>(categories);
 

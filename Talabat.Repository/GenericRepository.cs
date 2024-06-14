@@ -44,12 +44,15 @@ namespace Talabat.Repository
 
         public async Task<int> GetCountAsync(ISpecifications<T> specifications)
             => await ApplySpec(specifications).CountAsync();
-
-
-
+            
         private IQueryable<T> ApplySpec(ISpecifications<T> spec)
              => SpecificationsEvaluator<T>.GetQuery(_storeContext.Set<T>(), spec);
 
+        public async Task AddAsync(T entity) => await _storeContext.AddAsync(entity);
+
+        public void Update(T entity) => _storeContext.Update(entity);
+
+        public void Delete(T entity) => _storeContext.Remove(entity);
 
     }
 }

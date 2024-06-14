@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Diagnostics;
 using Microsoft.Data.SqlClient;
@@ -9,11 +10,16 @@ using Talabat.Apis.Errors;
 using Talabat.Apis.Extensions;
 using Talabat.Apis.Helpers;
 using Talabat.Apis.MiddleWares;
+using Talabat.Core;
 using Talabat.Core.Entities;
+using Talabat.Core.Entities.Identity;
 using Talabat.Core.Repositories.Contract;
+using Talabat.Core.Services.Contract;
 using Talabat.Core.Specifications;
 using Talabat.Repository;
 using Talabat.Repository.Data;
+using Talabat.Repository.Identity;
+using Talabat.Service;
 
 namespace Talabat.Apis
 {
@@ -37,7 +43,22 @@ namespace Talabat.Apis
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
 
-            builder.Services.AddSingleton<IConnectionMultiplexer>();
+            builder.Services.AddDbContext<ApplicationIdentityDbContext>(options =>
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"));
+
+            });
+
+            builder.Services.AddSingleton<IConnectionMultiplexer>(serviceprovider =>
+            {
+                var ceonnection = builder.Configuration.GetConnectionString("Redis");
+
+                return ConnectionMultiplexer.Connect(ceonnection);
+            });
+
+            builder.Services.AddIdentityServices(builder.Configuration);
+
+            builder.Services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
 
             builder.Services.AddApplicationServices();
             // this is Extension method that From  ApplicationServicesExtensions.AddApplicationServices()
@@ -60,9 +81,11 @@ namespace Talabat.Apis
 
             app.UseStaticFiles();
 
-            app.UseAuthorization();
-
             app.MapControllers();
+
+            app.UseAuthentication();
+
+            app.UseAuthorization();
 
             #endregion
 
@@ -71,8 +94,14 @@ namespace Talabat.Apis
 
             var services = scope.ServiceProvider;//IOC Container .
 
-            var _dbContext = services.GetRequiredService<StoreContext>();
             // here i ask Clr to create object from class dbconte Explicitly . 
+            var _dbContext = services.GetRequiredService<StoreContext>();
+
+            // here i ask Clr to create object from class Explicitly . 
+            var _identityDbContext = services.GetRequiredService<ApplicationIdentityDbContext>();
+
+            // here i must add service Identity to the container .
+            var _userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
 
             try
             {
@@ -80,10 +109,13 @@ namespace Talabat.Apis
 
                 // after applying migration make seeding for data .
                 await StoreContextSeed.SeedAsync(_dbContext);
+
+                await _identityDbContext.Database.MigrateAsync();
+
+                await ApplicationIdentityDbContextSeed.SeedUsersAsync(_userManager);
             }
             catch (Exception ex)
             {
-
                 var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger<Program>();
 
                 logger.LogError(ex, "an error has been occured during apply the migration .");

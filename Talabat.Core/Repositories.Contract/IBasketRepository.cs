@@ -10,9 +10,9 @@ namespace Talabat.Core.Repositories.Contract
 {
     public interface IBasketRepository
     {
-        Task<CustomerBasket> GetBasketAsyncById(string basketId);
+        Task<CustomerBasket?> GetBasketAsyncById(string basketId);
 
-        Task<CustomerBasket> CreateOrUpdateBasketAsync(CustomerBasket customerBasket); // create or up
+        Task<CustomerBasket?> CreateOrUpdateBasketAsync(CustomerBasket customerBasket); // create or up
 
         Task<bool> DeleteBasketAsync(string basketId);
     }

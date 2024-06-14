@@ -27,6 +27,7 @@ namespace Talabat.Core.Product_Specs
                 product.Name.ToLower().Contains(productSpecParams.ProductName))
         )
         {
+
             AddIncludes();
 
             if (!string.IsNullOrEmpty(productSpecParams.Sort))

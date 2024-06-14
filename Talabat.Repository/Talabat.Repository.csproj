@@ -15,4 +15,9 @@
     <ProjectReference Include="..\Talabat.Core\Talabat.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Identity\Configurations\" />
+    <Folder Include="Identity\DataSeeding\" />
+  </ItemGroup>
+
 </Project>

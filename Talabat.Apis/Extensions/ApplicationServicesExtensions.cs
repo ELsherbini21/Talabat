@@ -2,7 +2,9 @@
 using Talabat.Apis.Errors;
 using Talabat.Apis.Helpers;
 using Talabat.Core.Repositories.Contract;
+using Talabat.Core.Services.Contract;
 using Talabat.Repository;
+using Talabat.Service;
 
 namespace Talabat.Apis.Extensions
 {
@@ -11,16 +13,22 @@ namespace Talabat.Apis.Extensions
         // IServiceCollection == IOC Container . 
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
+            services.AddScoped(typeof(IProductService), typeof(ProductService));
+
+            services.AddScoped(typeof(IProductBrandService), typeof(ProductBrandService));
+
+            services.AddScoped(typeof(IProductCategoryService), typeof(ProductCategoryService));
+
+            services.AddScoped(typeof(IOrderService), typeof(OrderService));
+
+            services.AddScoped(typeof(IBasketRepository), typeof(BasketRepository));
+
             // when some ask to create object IGenericRepostiory of type . 
             // ==> create object from type genericRepo of the same type .
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
-            //builder.Services.AddScoped(typeof(ISpecifications<>), typeof(BaseSpecifications <>));
 
             services.AddAutoMapper(typeof(MappingProfile));
-
-
-
 
             // Handle Validation Error in 
             services.Configure<ApiBehaviorOptions>(options =>
